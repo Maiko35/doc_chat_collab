@@ -2,111 +2,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'stylesheets/output.css' %}">
-    <script src="{% static 'scripts/feather.min.js' %}"></script>
-    <title>Dr Chat</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static 'stylesheets/output.css' %}" />
+  <script src="{% static 'scripts/feather.min.js' %}"></script>
+  <title>Dr Chat</title>
+
+  <style>
+    /* Fade-in animation */
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* User message style */
+    .user-message {
+      background-color: #e0f7fa; /* light teal */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      color: #004d40;
+    }
+
+    /* Dr Chat message style */
+    .dr-chat-message {
+      background-color: #00796b; /* dark teal */
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Loading message style */
+    .loading-message {
+      font-style: italic;
+      color: #666;
+      padding: 0.5rem 1rem;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      .grid.grid-cols-12 {
+        display: block;
+      }
+      .col-span-3, .col-span-9 {
+        width: 100%;
+      }
+      .output {
+        height: 20rem !important;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="grid grid-cols-12 w-screen h-[90%]">
-        <div class="col-span-3 bg-gray-300 p-5">
-            <h1 class="mx-auto text-center font-semibold">DR CHAT</h1>
-            <div class="w-56 h-56 rounded-full doc mx-auto">
-            </div>
-            <div>
-                <p class="text-center py-4 welcome-text"></p>
-            </div>
-        </div>
-        <div class="col-span-9">
-            <header class="py-3.5 px-4 bg-white  shadow z-10 flex justify-between items-center">
-                <h2 class="text-sm font-semibold text-gray-700 tracking-wide">
-                    ASK FOR HELP
-                </h2>
-                <div>
-                    <a href="/"><i class="w-5 h-5" data-feather="log-out"></i></a>
-                </div>
-            </header>
-            <div class="output h-[32rem] overflow-y-scroll p-4 flex flex-col gap-4"> 
-            </div>
-            <form action="" method="POST" class="px-4 pt-4 w-full">
-                <div class="grid grid-cols-12 gap-2 w-full *:block">
-                    <input  class="border-slate-300 col-span-11 p-3 flex-1 rounded-2xl border bg-blue-50 outline-none text-slate-800" type="text" class="w-full" name="message">
-                    <button class="text-white bg-blue-500 col-span-1 rounded-xl text-[.95em] py-3">Submit</button>
-                </div>
-            </form>
-        </div>
+  <div class="grid grid-cols-12 w-screen h-[90%]">
+    <div class="col-span-3 bg-gray-300 p-5">
+      <h1 class="mx-auto text-center font-semibold">DR CHAT</h1>
+      <div class="w-56 h-56 rounded-full doc mx-auto"></div>
+      <div>
+        <p class="text-center py-4 welcome-text"></p>
+      </div>
     </div>
+    <div class="col-span-9 flex flex-col">
+      <header
+        class="py-3.5 px-4 bg-white shadow z-10 flex justify-between items-center"
+      >
+        <h2 class="text-sm font-semibold text-gray-700 tracking-wide">ASK FOR HELP</h2>
+        <div>
+          <a href="/"><i class="w-5 h-5" data-feather="log-out"></i></a>
+        </div>
+      </header>
 
-    <script>
+      <div
+        class="output h-[32rem] overflow-y-scroll p-4 flex flex-col gap-4 flex-grow"
+      ></div>
+
+      <form action="" method="POST" class="px-4 pt-4 w-full">
+        <div class="grid grid-cols-12 gap-2 w-full *:block">
+          <input
+            class="border-slate-300 col-span-11 p-3 flex-1 rounded-2xl border bg-blue-50 outline-none text-slate-800"
+            type="text"
+            name="message"
+            placeholder="Type your question here..."
+            required
+            autocomplete="off"
+          />
+          <button
+            class="text-white bg-blue-500 col-span-1 rounded-xl text-[.95em] py-3"
+            type="submit"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
     let input = document.querySelector("[name=message]");
-    let submitBtn = document.querySelector("button");
+    let submitBtn = document.querySelector("button[type=submit]");
     let outDiv = document.querySelector(".output");
 
-    submitBtn.addEventListener("click", (event)=>{
-        event.preventDefault();
-        let time = new Date();
-        let stringTime = `${time.getHours()}:${time.getMinutes()}`
-        let userPrompt = `
-            <div class="flex items-start gap-2.5 self-end">
-                <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
-                <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                    <span class="text-sm font-semibold text-gray-900">User</span>
-                    <span class="text-sm font-normal text-gray-500">${stringTime}</span>
-                </div>
-                <p class="text-sm font-normal py-2.5 text-gray-900">${input.value}</p>
-                </div>
+    submitBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (!input.value.trim()) return; // no empty messages
+
+      let time = new Date();
+      let stringTime = `${time.getHours()}:${time.getMinutes().toString().padStart(2, "0")}`;
+
+      // User message HTML
+      let userPrompt = `
+        <div class="fade-in flex items-start gap-2.5 self-end">
+          <div
+            class="user-message flex flex-col w-full max-w-[320px] leading-1.5 p-4 rounded-e-xl rounded-es-xl"
+          >
+            <div class="flex items-center space-x-2 rtl:space-x-reverse">
+              <span class="text-sm font-semibold">${"User"}</span>
+              <span class="text-sm font-normal text-gray-500">${stringTime}</span>
             </div>
-        `;
+            <p class="text-sm font-normal py-2.5">${input.value}</p>
+          </div>
+        </div>
+      `;
 
-        outDiv.innerHTML += userPrompt;
+      outDiv.innerHTML += userPrompt;
+      outDiv.scrollTo({ top: outDiv.scrollHeight, behavior: "smooth" });
 
-        let windowLocation = window.location.origin;
+      // Clear input & focus
+      input.value = "";
+      input.focus();
 
-        fetch(`${windowLocation}/api/model/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: input.value
-            })
-        }).then((response)=>{
-            return response.json();
-        }).then((data)=>{
-            msg = data.response;
-            let time = new Date();
-            let stringTime = `${time.getHours()}:${time.getMinutes()}`
-            let message = `
-                <div class="flex items-start gap-2.5">
-                    <div class="flex flex-col w-full max-w-[540px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
-                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span class="text-sm font-semibold text-gray-900">Dr chat</span>
-                        <span class="text-sm font-normal text-gray-500">${stringTime}</span>
-                    </div>
-                    <p class="text-sm font-normal py-2.5 text-gray-900">${msg}</p>
-                    </div>
+      // Loading indicator
+      let loadingMessage = document.createElement("div");
+      loadingMessage.className = "loading-message";
+      loadingMessage.innerText = "Dr Chat is thinking... 🤔";
+      outDiv.appendChild(loadingMessage);
+      outDiv.scrollTo({ top: outDiv.scrollHeight, behavior: "smooth" });
+
+      let windowLocation = window.location.origin;
+
+      fetch(`${windowLocation}/api/model/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input.value,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          loadingMessage.remove();
+
+          let msg = data.response;
+          let time = new Date();
+          let stringTime = `${time.getHours()}:${time.getMinutes().toString().padStart(2, "0")}`;
+
+          let message = `
+            <div class="fade-in flex items-start gap-2.5">
+              <div
+                class="dr-chat-message flex flex-col w-full max-w-[540px] leading-1.5 p-4 rounded-e-xl rounded-es-xl"
+              >
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                  <span class="text-sm font-semibold">Dr Chat</span>
+                  <span class="text-sm font-normal text-gray-300">${stringTime}</span>
                 </div>
-            `
+                <p class="text-sm font-normal py-2.5">${msg}</p>
+              </div>
+            </div>
+          `;
 
-            outDiv.innerHTML += message;
+          outDiv.innerHTML += message;
+          outDiv.scrollTo({ top: outDiv.scrollHeight, behavior: "smooth" });
         })
+        .catch((err) => {
+          loadingMessage.remove();
+          let errorMsg = `
+            <div class="fade-in flex items-start gap-2.5">
+              <div
+                class="dr-chat-message flex flex-col w-full max-w-[540px] leading-1.5 p-4 rounded-e-xl rounded-es-xl bg-red-600"
+              >
+                <p class="text-sm font-normal py-2.5 text-white">
+                  Oops! Something went wrong. Please try again.
+                </p>
+              </div>
+            </div>
+          `;
+          outDiv.innerHTML += errorMsg;
+          outDiv.scrollTo({ top: outDiv.scrollHeight, behavior: "smooth" });
+        });
+    });
 
-    })
-
+    // Welcome typing effect
     let welcomeCt = document.querySelector(".welcome-text");
-    let welcomeText = "Hello, I am Dr Chat, how can I help you today?"
+    let welcomeText = "Hello, I am Dr Chat, how can I help you today?";
     let counter = 0;
 
-    const interval = setInterval(()=>{
-        welcomeCt.innerHTML += welcomeText[counter];
-        counter++;
-        if (counter == welcomeText.length) {
-            clearInterval(interval);
-        }
+    const interval = setInterval(() => {
+      welcomeCt.innerHTML += welcomeText[counter];
+      counter++;
+      if (counter == welcomeText.length) {
+        clearInterval(interval);
+      }
     }, 100);
 
     feather.replace();
-    </script>
+  </script>
 </body>
 </html>

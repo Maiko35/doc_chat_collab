@@ -6,6 +6,8 @@ class Client(models.Model):
     name = models.CharField(max_length=255)
     contact = models.CharField(max_length=255)
 
+    
+
     def __str__(self):
         return "%s --> %s" % (self.name, self.contact)
     
